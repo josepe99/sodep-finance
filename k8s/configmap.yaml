@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sodep-finance-config
+data:
+  TRANSACTIONS_HOST: http://service-transactions:8080
+  ANALYTICS_HOST: http://service-analytics:8080
+  BANK_HOST: http://service-bank:8080

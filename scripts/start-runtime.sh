@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env sh
+set -eu
 
 if [ ! -d dist ]; then
   echo "No existe la carpeta dist. Ejecuta primero: npm run build" >&2

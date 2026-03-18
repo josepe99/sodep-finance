@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sodep-finance
+  labels:
+    app: sodep-finance
+spec:
+  rules:
+    - host: sodep-finance.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sodep-finance
+                port:
+                  number: 80

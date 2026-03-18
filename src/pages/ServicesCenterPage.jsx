@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { getBankHost, getCentrosServicios } from '../api/bank'
 import { BankLocationsList } from '../components/BankLocationsList'
-import { PageHeader } from '../components/PageHeader'
 import { getCentrosServiciosItems } from '../utils/bank'
-import { formatRawData } from '../utils/formatters'
 
 export function ServicesCenterPage() {
   const [query, setQuery] = useState('')
@@ -79,10 +77,6 @@ export function ServicesCenterPage() {
           </div>
 
           {rawResponse === null && <p className="empty-state">Todavia no hay respuesta capturada.</p>}
-
-          {rawResponse !== null && items.length === 0 && (
-            <pre className="response-box">{formatRawData(rawResponse)}</pre>
-          )}
 
           {items.length > 0 && <BankLocationsList items={items} />}
         </article>

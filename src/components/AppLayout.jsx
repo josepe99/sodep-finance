@@ -1,6 +1,4 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { getBankHost } from '../api/bank'
-import { getTransactionsHost } from '../api/transactions'
 
 const navItems = [
   { to: '/transactions', label: 'Transacciones' },
@@ -13,9 +11,6 @@ function getNavLinkClassName({ isActive }) {
 }
 
 export function AppLayout() {
-  const hasTransactionsHost = getTransactionsHost().length > 0
-  const hasBankHost = getBankHost().length > 0
-
   return (
     <div className="app-shell">
       <header className="site-header">

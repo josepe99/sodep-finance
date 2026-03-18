@@ -1,4 +1,4 @@
-# DEPLOY - React + Vite en OpenShift con Runtime Configuration
+# DEPLOY - React + Vite con Runtime Configuration
 
 ## 1) Problema y solución
 
@@ -7,8 +7,8 @@ En Vite, `import.meta.env.VITE_*` se resuelve en build time. Para cumplir `Build
 Se implementó este patrón:
 
 1. `index.html` carga `/config.js` antes de `main.jsx`.
-2. Al iniciar el contenedor, `scripts/start-runtime.sh` genera `dist/config.js` leyendo `VITE_API_URL` desde variables de entorno del Pod.
-3. React lee `window.__APP_CONFIG__.VITE_API_URL` y usa ese valor para el `fetch`.
+2. Al iniciar el contenedor, `scripts/start-runtime.sh` genera `dist/config.js` leyendo `TRANSACTIONS_HOST`, `ANALYTICS_HOST` y `BANK_HOST` desde variables de entorno del Pod.
+3. Los módulos de API en React leen `window.__APP_CONFIG__` y usan esos hosts para consumir backend sin rebuild.
 
 Resultado: la misma imagen sirve para Dev/QA/Prod. Solo cambia `ConfigMap` + reinicio de Pod.
 
@@ -16,7 +16,8 @@ Resultado: la misma imagen sirve para Dev/QA/Prod. Solo cambia `ConfigMap` + rei
 
 - `index.html`: agrega `<script src="/config.js"></script>`.
 - `public/config.js`: fallback para desarrollo local.
-- `src/App.jsx`: consume `window.__APP_CONFIG__.VITE_API_URL`.
+- `src/api/transactions.js`: resuelve `TRANSACTIONS_HOST`.
+- `src/api/bank.js`: resuelve `BANK_HOST`.
 - `scripts/start-runtime.sh`: genera `dist/config.js` en runtime.
 - `server.cjs`: servidor SPA para producción.
 - `scripts/oc-deploy.sh`: crea ambiente completo en OpenShift.
@@ -27,13 +28,17 @@ Resultado: la misma imagen sirve para Dev/QA/Prod. Solo cambia `ConfigMap` + rei
 Plantilla en `env.sample`:
 
 ```bash
-VITE_API_URL=
+TRANSACTIONS_HOST=
+ANALYTICS_HOST=
+BANK_HOST=
 ```
 
 Ejemplo local en `.env.local`:
 
 ```bash
-VITE_API_URL=http://localhost:8080/api
+TRANSACTIONS_HOST=http://localhost:8080
+ANALYTICS_HOST=http://localhost:8081
+BANK_HOST=http://localhost:8082
 ```
 
 ## 4) Ejecución local
@@ -47,15 +52,20 @@ Para simular runtime config del contenedor:
 
 ```bash
 npm run build
-VITE_API_URL=http://localhost:8080/api npm start
+TRANSACTIONS_HOST=http://localhost:8080 \
+ANALYTICS_HOST=http://localhost:8081 \
+BANK_HOST=http://localhost:8082 \
+npm start
 ```
 
 ## 5) Despliegue manual en OpenShift (CLI)
 
 ```bash
-# 1. ConfigMap con URL de Quarkus
+# 1. ConfigMap con hosts de backend
 oc create configmap frontend-config \
-  --from-literal=VITE_API_URL=https://<route-quarkus>/api \
+  --from-literal=TRANSACTIONS_HOST=https://<route-transactions> \
+  --from-literal=ANALYTICS_HOST=https://<route-analytics> \
+  --from-literal=BANK_HOST=https://<route-bank> \
   --dry-run=client -o yaml | oc apply -f -
 
 # 2. S2I Node.js desde Git
@@ -79,23 +89,80 @@ oc get pods
 oc get route mi-frontend
 ```
 
-## 6) Automatización (simulando pipeline)
+## 6) Kubernetes estándar
+
+### Construcción de imagen
+
+```bash
+docker build -t sodep-finance:local .
+```
+
+Si usas `kind`, carga la imagen:
+
+```bash
+kind load docker-image sodep-finance:local
+```
+
+Si usas un registry remoto:
+
+```bash
+docker tag sodep-finance:local <registry>/sodep-finance:<tag>
+docker push <registry>/sodep-finance:<tag>
+```
+
+### Manifiestos incluidos
+
+- `k8s/configmap.yaml`: hosts runtime de transactions, analytics y bank.
+- `k8s/deployment.yaml`: despliegue del frontend en puerto `8080`.
+- `k8s/service.yaml`: expone el Pod internamente.
+- `k8s/ingress.yaml`: publica el frontend con un host configurable.
+- `k8s/kustomization.yaml`: permite aplicar todo con `kubectl apply -k k8s`.
+
+### Despliegue
+
+1. Edita `k8s/deployment.yaml` y reemplaza `sodep-finance:local` por tu imagen real si el cluster no comparte el daemon Docker local.
+2. Edita `k8s/configmap.yaml` con las URLs internas o externas correctas de los servicios backend.
+3. Edita `k8s/ingress.yaml` con el host público de tu controlador Ingress.
+4. Aplica los recursos:
+
+```bash
+kubectl apply -k k8s
+kubectl rollout status deployment/sodep-finance
+kubectl get ingress sodep-finance
+```
+
+### Verificación
+
+```bash
+kubectl get pods
+kubectl port-forward svc/sodep-finance 8080:80
+curl http://127.0.0.1:8080/healthz
+curl http://127.0.0.1:8080/readyz
+```
+
+## 7) Automatización (simulando pipeline)
 
 ```bash
 # Crear/actualizar ambiente completo
-API_URL=https://<route-quarkus>/api GIT_URL=<url-repo-git> ./scripts/oc-deploy.sh
+TRANSACTIONS_HOST=https://<route-transactions> \
+ANALYTICS_HOST=https://<route-analytics> \
+BANK_HOST=https://<route-bank> \
+GIT_URL=<url-repo-git> \
+./scripts/oc-deploy.sh
 
 # Destruir ambiente
 ./scripts/oc-destroy.sh
 ```
 
-## 7) Verificación de runtime config
+## 8) Verificación de runtime config
 
 1. Cambiar valor en ConfigMap:
 
 ```bash
 oc create configmap frontend-config \
-  --from-literal=VITE_API_URL=https://<nueva-route-quarkus>/api \
+  --from-literal=TRANSACTIONS_HOST=https://<nueva-route-transactions> \
+  --from-literal=ANALYTICS_HOST=https://<nueva-route-analytics> \
+  --from-literal=BANK_HOST=https://<nueva-route-bank> \
   --dry-run=client -o yaml | oc apply -f -
 ```
 
@@ -107,7 +174,7 @@ oc rollout restart deployment/mi-frontend || oc rollout latest dc/mi-frontend
 
 3. Abrir frontend y confirmar que intenta consumir la nueva URL (visible en pantalla y en Network).
 
-## 8) Evidencias solicitadas
+## 9) Evidencias solicitadas
 
 - Captura de la app mostrando respuesta de backend.
 - Captura de consola con:

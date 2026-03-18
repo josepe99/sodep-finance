@@ -9,6 +9,7 @@ const PORT = Number(process.env.PORT || 8080)
 const TRANSACTIONS_HOST = process.env.TRANSACTIONS_HOST || ''
 const ANALYTICS_HOST = process.env.ANALYTICS_HOST || process.env.VITE_ANALYTICS_HOST || ''
 const BANK_HOST = process.env.BANK_HOST || process.env.VITE_BANK_HOST || ''
+let isShuttingDown = false
 
 const MIME_TYPES = {
   '.css': 'text/css; charset=utf-8',
@@ -51,6 +52,11 @@ function normalizeUrl(url) {
 function sendJsonError(response, statusCode, message) {
   response.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' })
   response.end(JSON.stringify({ message }))
+}
+
+function sendText(response, statusCode, message) {
+  response.writeHead(statusCode, { 'Content-Type': 'text/plain; charset=utf-8' })
+  response.end(message)
 }
 
 function readRequestBody(request) {
@@ -147,6 +153,16 @@ const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url, `http://${request.headers.host || 'localhost'}`)
   const pathname = decodeURIComponent(requestUrl.pathname)
 
+  if (pathname === '/healthz') {
+    sendText(response, 200, 'ok')
+    return
+  }
+
+  if (pathname === '/readyz') {
+    sendText(response, isShuttingDown ? 503 : 200, isShuttingDown ? 'shutting-down' : 'ready')
+    return
+  }
+
   if (pathname.startsWith('/api/')) {
     proxyApiRequest(request, response, requestUrl).catch(() => {
       sendJsonError(response, 502, 'Ocurrió un error al reenviar la solicitud al backend.')
@@ -177,3 +193,30 @@ const server = http.createServer((request, response) => {
 server.listen(PORT, () => {
   console.log(`Frontend escuchando en puerto ${PORT}`)
 })
+
+function shutdown(signal) {
+  if (isShuttingDown) {
+    return
+  }
+
+  isShuttingDown = true
+  console.log(`Señal ${signal} recibida. Cerrando servidor HTTP...`)
+
+  server.close((error) => {
+    if (error) {
+      console.error('Error al cerrar el servidor.', error)
+      process.exit(1)
+      return
+    }
+
+    process.exit(0)
+  })
+
+  setTimeout(() => {
+    console.error('Timeout agotado al cerrar el servidor.')
+    process.exit(1)
+  }, 10000).unref()
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'))
+process.on('SIGTERM', () => shutdown('SIGTERM'))
