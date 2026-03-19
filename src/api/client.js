@@ -17,16 +17,16 @@ function buildQuery(params = {}) {
   return query ? `?${query}` : ''
 }
 
-export function getApiUrl() {
-  return normalizeBaseUrl(String(runtimeConfig.VITE_API_URL || '').trim())
+export function getApiHost(configKey) {
+  return normalizeBaseUrl(String(runtimeConfig[configKey] || '').trim())
 }
 
-export function hasApiUrlConfigured() {
-  return getApiUrl().length > 0 || import.meta.env.DEV
+export function hasApiHostConfigured(configKey) {
+  return getApiHost(configKey).length > 0 || import.meta.env.DEV
 }
 
-export function buildApiUrl(pathname, params = {}) {
-  const baseUrl = getApiUrl()
+export function buildApiUrl(configKey, pathname, params = {}) {
+  const baseUrl = getApiHost(configKey)
   const query = buildQuery(params)
 
   if (!baseUrl) {

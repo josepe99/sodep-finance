@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { getCentrosServicios } from '../api/bank'
-import { hasApiUrlConfigured } from '../api/client'
+import { getCentrosServicios, hasBankHostConfigured } from '../api/bank'
 import { BankLocationsList } from '../components/BankLocationsList'
 import { getCentrosServiciosItems } from '../utils/bank'
 
@@ -10,14 +9,14 @@ export function ServicesCenterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [rawResponse, setRawResponse] = useState(null)
 
-  const hasApiUrl = hasApiUrlConfigured()
+  const hasBankHost = hasBankHostConfigured()
   const items = getCentrosServiciosItems(rawResponse)
 
   async function handleSubmit(event) {
     event.preventDefault()
 
-    if (!hasApiUrl) {
-      setBankError('No hay VITE_API_URL configurado.')
+    if (!hasBankHost) {
+      setBankError('No hay VITE_BANK_HOST configurado.')
       return
     }
 

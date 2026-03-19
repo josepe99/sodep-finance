@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { getParametrosSipap } from '../api/bank'
-import { hasApiUrlConfigured } from '../api/client'
+import { getParametrosSipap, hasBankHostConfigured } from '../api/bank'
 import { PageHeader } from '../components/PageHeader'
 import { formatRawData } from '../utils/formatters'
 
@@ -9,11 +8,11 @@ export function SipapParametersPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [rawResponse, setRawResponse] = useState(null)
 
-  const hasApiUrl = hasApiUrlConfigured()
+  const hasBankHost = hasBankHostConfigured()
 
   async function handleLoadParametros() {
-    if (!hasApiUrl) {
-      setBankError('No hay VITE_API_URL configurado.')
+    if (!hasBankHost) {
+      setBankError('No hay VITE_BANK_HOST configurado.')
       return
     }
 

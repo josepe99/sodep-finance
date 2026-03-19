@@ -8,17 +8,38 @@ function normalizeTarget(url) {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '')
-  const apiUrl = env.VITE_API_URL || ''
-  const serverConfig = apiUrl
-    ? {
-        proxy: {
-          '/api': {
-            target: normalizeTarget(apiUrl),
-            changeOrigin: true,
-          },
-        },
-      }
-    : undefined
+  const transactionsHost = env.VITE_TRANSACTIONS_HOST || ''
+  const analyticsHost = env.VITE_ANALYTICS_HOST || ''
+  const bankHost = env.VITE_BANK_HOST || ''
+  const proxy = {}
+
+  if (transactionsHost) {
+    proxy['/api/transactions'] = {
+      target: normalizeTarget(transactionsHost),
+      changeOrigin: true,
+    }
+  }
+
+  if (analyticsHost) {
+    proxy['/api/balance'] = {
+      target: normalizeTarget(analyticsHost),
+      changeOrigin: true,
+    }
+  }
+
+  if (bankHost) {
+    proxy['/api/common/centros-servicios'] = {
+      target: normalizeTarget(bankHost),
+      changeOrigin: true,
+    }
+
+    proxy['/api/secure/common/parametros'] = {
+      target: normalizeTarget(bankHost),
+      changeOrigin: true,
+    }
+  }
+
+  const serverConfig = Object.keys(proxy).length > 0 ? { proxy } : undefined
 
   return {
     plugins: [react()],

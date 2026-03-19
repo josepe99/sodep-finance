@@ -11,30 +11,32 @@ npm run build
 npm start
 ```
 
-- `npm run dev`: usa `VITE_API_URL` desde `.env.local` solo para proxyear `/api` en el servidor de desarrollo.
-- `npm start`: genera `dist/config.js` leyendo `VITE_API_URL` del entorno del contenedor antes de servir la SPA.
+- `npm run dev`: usa `VITE_TRANSACTIONS_HOST`, `VITE_ANALYTICS_HOST` y `VITE_BANK_HOST` desde `.env.local` para proxyear `/api` en desarrollo.
+- `npm start`: genera `dist/config.js` leyendo esas tres variables desde el entorno del contenedor antes de servir la SPA.
 
 ## Runtime configuration
 
 - `index.html` carga `/config.js` antes de montar React.
-- `scripts/start-runtime.sh` genera ese archivo con `window.__APP_CONFIG__.VITE_API_URL`.
-- El código React lee `window.__APP_CONFIG__.VITE_API_URL` en runtime y consume Quarkus sin rebuild.
+- `scripts/start-runtime.sh` genera ese archivo con `window.__APP_CONFIG__`.
+- El código React lee `window.__APP_CONFIG__.VITE_TRANSACTIONS_HOST`, `window.__APP_CONFIG__.VITE_ANALYTICS_HOST` y `window.__APP_CONFIG__.VITE_BANK_HOST` en runtime.
 
 ## Desarrollo local
 
 Usa `env.sample` como plantilla y crea `.env.local` con:
 
 ```bash
-VITE_API_URL=http://localhost:8080
+VITE_TRANSACTIONS_HOST=http://localhost:8080
+VITE_ANALYTICS_HOST=http://localhost:8081
+VITE_BANK_HOST=http://localhost:8082
 ```
 
-En desarrollo, Vite proxya `/api/*` hacia esa URL.
+En desarrollo, Vite proxya cada endpoint `/api/*` al microservicio correspondiente.
 
 ## Kubernetes
 
 Hay manifiestos listos en [`k8s/`](./k8s).
 
-1. Ajusta [k8s/configmap.yaml](/home/jcardozo/sodep/sodep-finance/k8s/configmap.yaml) con la URL pública real de Quarkus.
+1. Ajusta [k8s/configmap.yaml](/home/jcardozo/sodep/sodep-finance/k8s/configmap.yaml) con las URLs públicas reales.
 2. Ajusta [k8s/deployment.yaml](/home/jcardozo/sodep/sodep-finance/k8s/deployment.yaml) con la imagen final.
 3. Aplica `kubectl apply -k k8s`.
 

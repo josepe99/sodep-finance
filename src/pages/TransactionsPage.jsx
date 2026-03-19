@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getBalance } from '../api/analytics'
-import { hasApiUrlConfigured } from '../api/client'
-import { deleteTransaction, listTransactions } from '../api/transactions'
+import { getBalance, hasAnalyticsHostConfigured } from '../api/analytics'
+import {
+  deleteTransaction,
+  hasTransactionsHostConfigured,
+  listTransactions,
+} from '../api/transactions'
 import { PageHeader } from '../components/PageHeader'
 import { TransactionList } from '../components/TransactionList'
 import { TransactionSummary } from '../components/TransactionSummary'
@@ -23,12 +26,25 @@ export function TransactionsPage() {
   const [error, setError] = useState('')
   const [deletingId, setDeletingId] = useState(null)
 
-  const hasApiUrl = hasApiUrlConfigured()
+  const hasTransactionsHost = hasTransactionsHostConfigured()
+  const hasAnalyticsHost = hasAnalyticsHostConfigured()
+  const hasRequiredHosts = hasTransactionsHost && hasAnalyticsHost
+  const missingHosts = []
+
+  if (!hasTransactionsHost) {
+    missingHosts.push('VITE_TRANSACTIONS_HOST')
+  }
+
+  if (!hasAnalyticsHost) {
+    missingHosts.push('VITE_ANALYTICS_HOST')
+  }
+
+  const missingHostsMessage = `No hay ${missingHosts.join(' y ')} configurado${missingHosts.length > 1 ? 's' : ''}.`
 
   useEffect(() => {
-    if (!hasApiUrl) {
+    if (!hasRequiredHosts) {
       setStatus('error')
-      setError('No hay VITE_API_URL configurado.')
+      setError(missingHostsMessage)
       setTransactions([])
       setBalance(null)
       return
@@ -67,11 +83,11 @@ export function TransactionsPage() {
     return () => {
       ignore = true
     }
-  }, [hasApiUrl])
+  }, [hasRequiredHosts, missingHostsMessage])
 
   async function handleRefresh() {
-    if (!hasApiUrl) {
-      setError('No hay VITE_API_URL configurado.')
+    if (!hasRequiredHosts) {
+      setError(missingHostsMessage)
       return
     }
 

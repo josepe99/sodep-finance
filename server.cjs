@@ -73,7 +73,7 @@ const server = http.createServer((request, response) => {
     sendJsonError(
       response,
       404,
-      'El frontend no proxya /api en runtime. Configura VITE_API_URL para que React consuma Quarkus directamente.',
+      'El frontend no proxya /api en runtime. Configura VITE_TRANSACTIONS_HOST, VITE_ANALYTICS_HOST y VITE_BANK_HOST para que React consuma cada microservicio directamente.',
     )
     return
   }

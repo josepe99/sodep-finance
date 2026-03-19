@@ -3,4 +3,6 @@ kind: ConfigMap
 metadata:
   name: frontend-config
 data:
-  VITE_API_URL: https://quarkus.apps.cluster.example
+  VITE_TRANSACTIONS_HOST: https://transactions.apps.cluster.example
+  VITE_ANALYTICS_HOST: https://analytics.apps.cluster.example
+  VITE_BANK_HOST: https://bank.apps.cluster.example
