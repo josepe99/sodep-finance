@@ -24,6 +24,8 @@ const MIME_TYPES = {
 function sendFile(filePath, response) {
   const extension = path.extname(filePath)
   const contentType = MIME_TYPES[extension] || 'application/octet-stream'
+  const fileName = path.basename(filePath)
+  const shouldDisableCache = extension === '.html' || fileName === 'config.js'
 
   fs.readFile(filePath, (error, file) => {
     if (error) {
@@ -32,7 +34,10 @@ function sendFile(filePath, response) {
       return
     }
 
-    response.writeHead(200, { 'Content-Type': contentType })
+    response.writeHead(200, {
+      'Content-Type': contentType,
+      'Cache-Control': shouldDisableCache ? 'no-store, max-age=0' : 'public, max-age=31536000, immutable',
+    })
     response.end(file)
   })
 }
@@ -87,7 +92,7 @@ function resolveApiTarget(pathname) {
   if (pathname === '/api/balance') {
     return {
       host: ANALYTICS_HOST,
-      errorMessage: 'VITE_ANALYTICS_HOST no está configurado en el frontend.',
+      errorMessage: 'ANALYTICS_HOST no está configurado en el frontend.',
       upstreamErrorMessage: 'No se pudo conectar con el servicio de analytics.',
     }
   }
@@ -98,7 +103,7 @@ function resolveApiTarget(pathname) {
   ) {
     return {
       host: BANK_HOST,
-      errorMessage: 'VITE_BANK_HOST no está configurado en el frontend.',
+      errorMessage: 'BANK_HOST no está configurado en el frontend.',
       upstreamErrorMessage: 'No se pudo conectar con el servicio de bank.',
     }
   }
