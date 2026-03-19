@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { hasApiUrlConfigured } from '../api/client'
 import {
   createTransaction,
   getTransaction,
-  getTransactionsHost,
   updateTransaction,
 } from '../api/transactions'
 import { PageHeader } from '../components/PageHeader'
@@ -18,7 +18,7 @@ export function TransactionFormPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEditing = Boolean(id)
-  const hasTransactionsHost = getTransactionsHost().length > 0
+  const hasApiUrl = hasApiUrlConfigured()
 
   const [form, setForm] = useState(EMPTY_TRANSACTION_FORM)
   const [error, setError] = useState('')
@@ -26,9 +26,9 @@ export function TransactionFormPage() {
   const [status, setStatus] = useState(isEditing ? 'loading' : 'ready')
 
   useEffect(() => {
-    if (!hasTransactionsHost) {
+    if (!hasApiUrl) {
       setStatus('error')
-      setError('No hay TRANSACTIONS_HOST configurado.')
+      setError('No hay VITE_API_URL configurado.')
       return
     }
 
@@ -74,7 +74,7 @@ export function TransactionFormPage() {
     return () => {
       ignore = true
     }
-  }, [hasTransactionsHost, id, isEditing])
+  }, [hasApiUrl, id, isEditing])
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -87,8 +87,8 @@ export function TransactionFormPage() {
   async function handleSubmit(event) {
     event.preventDefault()
 
-    if (!hasTransactionsHost) {
-      setError('No hay TRANSACTIONS_HOST configurado.')
+    if (!hasApiUrl) {
+      setError('No hay VITE_API_URL configurado.')
       return
     }
 

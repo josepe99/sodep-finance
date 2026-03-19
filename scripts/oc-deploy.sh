@@ -3,9 +3,7 @@ set -euo pipefail
 
 APP_NAME="${APP_NAME:-mi-frontend}"
 NODE_IMAGE_STREAM="${NODE_IMAGE_STREAM:-nodejs:20-ubi9}"
-TRANSACTIONS_HOST="${TRANSACTIONS_HOST:-}"
-ANALYTICS_HOST="${ANALYTICS_HOST:-}"
-BANK_HOST="${BANK_HOST:-}"
+VITE_API_URL="${VITE_API_URL:-}"
 GIT_REF="${GIT_REF:-main}"
 
 if ! command -v oc >/dev/null 2>&1; then
@@ -13,9 +11,9 @@ if ! command -v oc >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ -z "$TRANSACTIONS_HOST" ] || [ -z "$ANALYTICS_HOST" ] || [ -z "$BANK_HOST" ]; then
-  echo "Define TRANSACTIONS_HOST, ANALYTICS_HOST y BANK_HOST antes de ejecutar el script. Ejemplo:" >&2
-  echo "TRANSACTIONS_HOST=https://transactions.apps.cluster.com ANALYTICS_HOST=https://analytics.apps.cluster.com BANK_HOST=https://bank.apps.cluster.com ./scripts/oc-deploy.sh" >&2
+if [ -z "$VITE_API_URL" ]; then
+  echo "Define VITE_API_URL antes de ejecutar el script. Ejemplo:" >&2
+  echo "VITE_API_URL=https://quarkus.apps.cluster.com ./scripts/oc-deploy.sh" >&2
   exit 1
 fi
 
@@ -34,9 +32,7 @@ echo "Repositorio: ${GIT_URL}#${GIT_REF}"
 
 echo "[1/6] Creando/actualizando ConfigMap frontend-config"
 oc create configmap frontend-config \
-  --from-literal=TRANSACTIONS_HOST="$TRANSACTIONS_HOST" \
-  --from-literal=ANALYTICS_HOST="$ANALYTICS_HOST" \
-  --from-literal=BANK_HOST="$BANK_HOST" \
+  --from-literal=VITE_API_URL="$VITE_API_URL" \
   --dry-run=client -o yaml | oc apply -f -
 
 if ! oc get buildconfig "$APP_NAME" >/dev/null 2>&1; then

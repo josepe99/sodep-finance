@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getBalance } from '../api/analytics'
-import { deleteTransaction, getTransactionsHost, listTransactions } from '../api/transactions'
+import { hasApiUrlConfigured } from '../api/client'
+import { deleteTransaction, listTransactions } from '../api/transactions'
 import { PageHeader } from '../components/PageHeader'
 import { TransactionList } from '../components/TransactionList'
 import { TransactionSummary } from '../components/TransactionSummary'
@@ -22,12 +23,12 @@ export function TransactionsPage() {
   const [error, setError] = useState('')
   const [deletingId, setDeletingId] = useState(null)
 
-  const hasTransactionsHost = getTransactionsHost().length > 0
+  const hasApiUrl = hasApiUrlConfigured()
 
   useEffect(() => {
-    if (!hasTransactionsHost) {
+    if (!hasApiUrl) {
       setStatus('error')
-      setError('No hay TRANSACTIONS_HOST configurado.')
+      setError('No hay VITE_API_URL configurado.')
       setTransactions([])
       setBalance(null)
       return
@@ -66,11 +67,11 @@ export function TransactionsPage() {
     return () => {
       ignore = true
     }
-  }, [hasTransactionsHost])
+  }, [hasApiUrl])
 
   async function handleRefresh() {
-    if (!hasTransactionsHost) {
-      setError('No hay TRANSACTIONS_HOST configurado.')
+    if (!hasApiUrl) {
+      setError('No hay VITE_API_URL configurado.')
       return
     }
 

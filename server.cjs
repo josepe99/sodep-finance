@@ -1,14 +1,9 @@
 const fs = require('node:fs')
 const http = require('node:http')
-const https = require('node:https')
 const path = require('node:path')
-const { URL } = require('node:url')
 
 const DIST_DIR = path.join(__dirname, 'dist')
 const PORT = Number(process.env.PORT || 8080)
-const TRANSACTIONS_HOST = process.env.TRANSACTIONS_HOST || ''
-const ANALYTICS_HOST = process.env.ANALYTICS_HOST || process.env.VITE_ANALYTICS_HOST || ''
-const BANK_HOST = process.env.BANK_HOST || process.env.VITE_BANK_HOST || ''
 let isShuttingDown = false
 
 const MIME_TYPES = {
@@ -50,10 +45,6 @@ function resolvePath(urlPath) {
   return safePath
 }
 
-function normalizeUrl(url) {
-  return url.endsWith('/') ? url.slice(0, -1) : url
-}
-
 function sendJsonError(response, statusCode, message) {
   response.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' })
   response.end(JSON.stringify({ message }))
@@ -62,96 +53,6 @@ function sendJsonError(response, statusCode, message) {
 function sendText(response, statusCode, message) {
   response.writeHead(statusCode, { 'Content-Type': 'text/plain; charset=utf-8' })
   response.end(message)
-}
-
-function readRequestBody(request) {
-  return new Promise((resolve, reject) => {
-    const chunks = []
-
-    request.on('data', (chunk) => {
-      chunks.push(chunk)
-    })
-
-    request.on('end', () => {
-      resolve(chunks.length > 0 ? Buffer.concat(chunks) : null)
-    })
-
-    request.on('error', reject)
-  })
-}
-
-function resolveApiTarget(pathname) {
-  if (pathname.startsWith('/api/transactions')) {
-    return {
-      host: TRANSACTIONS_HOST,
-      errorMessage: 'TRANSACTIONS_HOST no está configurado en el frontend.',
-      upstreamErrorMessage: 'No se pudo conectar con el servicio de transacciones.',
-    }
-  }
-
-  if (pathname === '/api/balance') {
-    return {
-      host: ANALYTICS_HOST,
-      errorMessage: 'ANALYTICS_HOST no está configurado en el frontend.',
-      upstreamErrorMessage: 'No se pudo conectar con el servicio de analytics.',
-    }
-  }
-
-  if (
-    pathname === '/api/common/centros-servicios' ||
-    pathname === '/api/secure/common/parametros'
-  ) {
-    return {
-      host: BANK_HOST,
-      errorMessage: 'BANK_HOST no está configurado en el frontend.',
-      upstreamErrorMessage: 'No se pudo conectar con el servicio de bank.',
-    }
-  }
-
-  return null
-}
-
-async function proxyApiRequest(request, response, requestUrl) {
-  const target = resolveApiTarget(requestUrl.pathname)
-
-  if (!target) {
-    sendJsonError(response, 404, 'No existe un proxy configurado para este endpoint.')
-    return
-  }
-
-  if (!target.host) {
-    sendJsonError(response, 500, target.errorMessage)
-    return
-  }
-
-  const upstreamUrl = new URL(`${normalizeUrl(target.host)}${requestUrl.pathname}${requestUrl.search}`)
-  const body = await readRequestBody(request)
-  const client = upstreamUrl.protocol === 'https:' ? https : http
-
-  const headers = { ...request.headers }
-  headers.host = upstreamUrl.host
-
-  const proxyRequest = client.request(
-    upstreamUrl,
-    {
-      method: request.method,
-      headers,
-    },
-    (proxyResponse) => {
-      response.writeHead(proxyResponse.statusCode || 502, proxyResponse.headers)
-      proxyResponse.pipe(response)
-    },
-  )
-
-  proxyRequest.on('error', () => {
-    sendJsonError(response, 502, target.upstreamErrorMessage)
-  })
-
-  if (body) {
-    proxyRequest.write(body)
-  }
-
-  proxyRequest.end()
 }
 
 const server = http.createServer((request, response) => {
@@ -169,9 +70,11 @@ const server = http.createServer((request, response) => {
   }
 
   if (pathname.startsWith('/api/')) {
-    proxyApiRequest(request, response, requestUrl).catch(() => {
-      sendJsonError(response, 502, 'Ocurrió un error al reenviar la solicitud al backend.')
-    })
+    sendJsonError(
+      response,
+      404,
+      'El frontend no proxya /api en runtime. Configura VITE_API_URL para que React consuma Quarkus directamente.',
+    )
     return
   }
 

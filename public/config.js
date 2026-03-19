@@ -1,5 +1,3 @@
 window.__APP_CONFIG__ = {
-  TRANSACTIONS_HOST: '',
-  ANALYTICS_HOST: '',
-  BANK_HOST: ''
+  VITE_API_URL: ''
 }

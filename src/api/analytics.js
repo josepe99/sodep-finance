@@ -1,21 +1,7 @@
-async function parseResponse(response) {
-  const contentType = response.headers.get('content-type') || ''
-  const isJson = contentType.includes('application/json')
-  const payload = isJson ? await response.json() : null
-
-  if (!response.ok) {
-    const message =
-      payload?.message ||
-      payload?.error ||
-      `La solicitud falló con estado ${response.status}.`
-    throw new Error(message)
-  }
-
-  return payload
-}
+import { buildApiUrl, parseJsonResponse } from './client'
 
 export async function getBalance() {
-  const response = await fetch('/api/balance')
-  const payload = await parseResponse(response)
+  const response = await fetch(buildApiUrl('/api/balance'))
+  const payload = await parseJsonResponse(response)
   return payload.data
 }
