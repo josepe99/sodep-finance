@@ -15,13 +15,13 @@ ENV PORT=8080
 
 WORKDIR /app
 
-COPY --from=build --chown=node:node /app/dist ./dist
-COPY --chown=node:node server.cjs ./server.cjs
-COPY --chown=node:node scripts/start-runtime.sh ./scripts/start-runtime.sh
+COPY --from=build /app/dist ./dist
+COPY server.cjs ./server.cjs
+COPY scripts/start-runtime.sh ./scripts/start-runtime.sh
 
-RUN chmod +x ./scripts/start-runtime.sh
-
-USER node
+RUN chmod +x ./scripts/start-runtime.sh \
+  && chgrp -R 0 /app \
+  && chmod -R g=u /app
 
 EXPOSE 8080
 
