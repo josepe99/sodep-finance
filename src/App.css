@@ -310,6 +310,18 @@
     linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
 }
 
+.transaction-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) auto;
+  grid-template-areas:
+    'main actions'
+    'meta actions';
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  align-items: start;
+}
+
 .transaction-main,
 .bank-location-row {
   display: flex;
@@ -318,9 +330,22 @@
   align-items: start;
 }
 
+.transaction-main {
+  grid-area: main;
+  gap: 0.85rem;
+}
+
+.transaction-main > div {
+  min-width: 0;
+}
+
 .transaction-type {
-  margin: 0 0 0.35rem;
-  font-size: 0.78rem;
+  display: inline-flex;
+  margin: 0 0 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background-color: rgba(15, 118, 110, 0.12);
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   color: #0f766e;
@@ -337,38 +362,53 @@
   font-size: 1.1rem;
 }
 
+.transaction-item h3 {
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
 .bank-location-subtitle {
   margin-top: 0.3rem;
   color: #475569;
 }
 
 .transaction-meta {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin: 1rem 0 0;
-}
-
-.transaction-meta div {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin: 0;
 }
 
+.transaction-meta div {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  background-color: rgba(226, 232, 240, 0.7);
+}
+
 .transaction-meta dt {
-  font-size: 0.76rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #64748b;
 }
 
 .transaction-meta dd {
-  margin: 0.18rem 0 0;
+  margin: 0;
+  white-space: nowrap;
+  font-size: 0.9rem;
   color: #0f172a;
 }
 
 .amount-income,
 .amount-outgoing {
-  font-size: 1.4rem;
+  font-size: 1.18rem;
   letter-spacing: -0.04em;
+  white-space: nowrap;
 }
 
 .amount-income {
@@ -384,6 +424,20 @@
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 1rem;
+}
+
+.transaction-item .row-actions {
+  grid-area: actions;
+  margin-top: 0;
+  align-self: center;
+  gap: 0.5rem;
+}
+
+.transaction-item .button-link,
+.transaction-item .button-danger {
+  min-height: 38px;
+  padding: 0.55rem 0.9rem;
+  box-shadow: none;
 }
 
 .button-secondary {
@@ -485,6 +539,14 @@
   .form-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .transaction-item {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'main'
+      'meta'
+      'actions';
   }
 
   .site-nav,

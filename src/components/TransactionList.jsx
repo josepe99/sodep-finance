@@ -20,10 +20,6 @@ export function TransactionList({ deletingId, onDelete, transactions }) {
 
           <dl className="transaction-meta">
             <div>
-              <dt>ID</dt>
-              <dd>{transaction.id}</dd>
-            </div>
-            <div>
               <dt>Fecha</dt>
               <dd>{formatDate(transaction.date)}</dd>
             </div>
