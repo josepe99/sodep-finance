@@ -2,4 +2,5 @@ window.__APP_CONFIG__ = {
   VITE_TRANSACTIONS_HOST: '',
   VITE_ANALYTICS_HOST: '',
   VITE_BANK_HOST: '',
+  VITE_SIPAP_HOST: '',
 }

@@ -6,3 +6,4 @@ data:
   VITE_TRANSACTIONS_HOST: https://transactions.apps.cluster.example
   VITE_ANALYTICS_HOST: https://analytics.apps.cluster.example
   VITE_BANK_HOST: https://bank.apps.cluster.example
+  VITE_SIPAP_HOST: https://sipap.apps.cluster.example

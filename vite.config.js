@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
   const transactionsHost = env.VITE_TRANSACTIONS_HOST || ''
   const analyticsHost = env.VITE_ANALYTICS_HOST || ''
   const bankHost = env.VITE_BANK_HOST || ''
+  const sipapHost = env.VITE_SIPAP_HOST || ''
   const proxy = {}
 
   if (transactionsHost) {
@@ -35,6 +36,13 @@ export default defineConfig(({ mode }) => {
 
     proxy['/api/secure/common/parametros'] = {
       target: normalizeTarget(bankHost),
+      changeOrigin: true,
+    }
+  }
+
+  if (sipapHost) {
+    proxy['/favorites'] = {
+      target: normalizeTarget(sipapHost),
       changeOrigin: true,
     }
   }

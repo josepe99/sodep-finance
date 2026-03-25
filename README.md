@@ -11,14 +11,14 @@ npm run build
 npm start
 ```
 
-- `npm run dev`: usa `VITE_TRANSACTIONS_HOST`, `VITE_ANALYTICS_HOST` y `VITE_BANK_HOST` desde `.env.local` para proxyear `/api` en desarrollo.
-- `npm start`: genera `dist/config.js` leyendo esas tres variables desde el entorno del contenedor antes de servir la SPA.
+- `npm run dev`: usa `VITE_TRANSACTIONS_HOST`, `VITE_ANALYTICS_HOST`, `VITE_BANK_HOST` y `VITE_SIPAP_HOST` desde `.env.local` para proxyear endpoints en desarrollo.
+- `npm start`: genera `dist/config.js` leyendo esas cuatro variables desde el entorno del contenedor antes de servir la SPA.
 
 ## Runtime configuration
 
 - `index.html` carga `/config.js` antes de montar React.
 - `scripts/start-runtime.sh` genera ese archivo con `window.__APP_CONFIG__`.
-- El código React lee `window.__APP_CONFIG__.VITE_TRANSACTIONS_HOST`, `window.__APP_CONFIG__.VITE_ANALYTICS_HOST` y `window.__APP_CONFIG__.VITE_BANK_HOST` en runtime.
+- El código React lee `window.__APP_CONFIG__.VITE_TRANSACTIONS_HOST`, `window.__APP_CONFIG__.VITE_ANALYTICS_HOST`, `window.__APP_CONFIG__.VITE_BANK_HOST` y `window.__APP_CONFIG__.VITE_SIPAP_HOST` en runtime.
 
 ## Desarrollo local
 
@@ -28,6 +28,7 @@ Usa `env.sample` como plantilla y crea `.env.local` con:
 VITE_TRANSACTIONS_HOST=http://localhost:8080
 VITE_ANALYTICS_HOST=http://localhost:8081
 VITE_BANK_HOST=http://localhost:8082
+VITE_SIPAP_HOST=http://localhost:8080
 ```
 
 En desarrollo, Vite proxya cada endpoint `/api/*` al microservicio correspondiente.
