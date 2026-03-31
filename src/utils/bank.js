@@ -7,6 +7,34 @@ function normalizeBankText(value) {
   return normalized.toLowerCase() === 'null' ? '' : normalized
 }
 
+function normalizeCoordinatePart(value) {
+  const normalized = normalizeBankText(value)
+
+  if (!normalized) {
+    return null
+  }
+
+  const unsignedValue = normalized.startsWith('-') ? normalized.slice(1) : normalized
+  const digitsOnly = unsignedValue.replace('.', '')
+
+  if (!/^\d+$/.test(digitsOnly)) {
+    return null
+  }
+
+  return Number(digitsOnly)
+}
+
+function buildReferenceIdFromCoordinates(ubicacion) {
+  const latitudePart = normalizeCoordinatePart(ubicacion.latitud)
+  const longitudePart = normalizeCoordinatePart(ubicacion.longitud)
+
+  if (latitudePart === null || longitudePart === null) {
+    return ''
+  }
+
+  return String(latitudePart + longitudePart)
+}
+
 function getUbicacionReferenceId(ubicacion) {
   return normalizeBankText(
     ubicacion.referenceId ??
@@ -15,6 +43,7 @@ function getUbicacionReferenceId(ubicacion) {
       ubicacion.codigo ??
       ubicacion.codigoCentro,
   )
+    || buildReferenceIdFromCoordinates(ubicacion)
 }
 
 export function getCentrosServiciosItems(response) {

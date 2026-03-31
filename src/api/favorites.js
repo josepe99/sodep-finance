@@ -1,4 +1,4 @@
-import { buildApiUrl, getApiHost, hasApiHostConfigured, parseRawResponse } from './client'
+import { buildApiUrl, getApiHost, hasApiHostConfigured } from './client'
 
 const SIPAP_CONFIG_KEY = 'VITE_SIPAP_HOST'
 
@@ -19,5 +19,28 @@ export async function createFavorite(payload) {
     body: JSON.stringify(payload),
   })
 
-  return parseRawResponse(response)
+  const rawPayload = await response.text()
+  const contentType = response.headers.get('content-type') || ''
+  const isJson = contentType.includes('application/json')
+
+  let parsedPayload = rawPayload
+
+  if (isJson && rawPayload) {
+    try {
+      parsedPayload = JSON.parse(rawPayload)
+    } catch {
+      parsedPayload = rawPayload
+    }
+  }
+
+  if (!response.ok) {
+    const message =
+      typeof parsedPayload === 'object' && parsedPayload !== null
+        ? parsedPayload.message || parsedPayload.error || `La solicitud falló con estado ${response.status}.`
+        : rawPayload.trim() || `La solicitud falló con estado ${response.status}.`
+
+    throw new Error(message)
+  }
+
+  return parsedPayload
 }

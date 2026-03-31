@@ -4,6 +4,20 @@ import { createFavorite, hasSipapHostConfigured } from '../api/favorites'
 import { BankLocationsList } from '../components/BankLocationsList'
 import { getCentrosServiciosItems } from '../utils/bank'
 
+function getFavoriteSaveErrorMessage(error) {
+  const rawMessage = String(error?.message || '').trim()
+
+  if (!rawMessage) {
+    return 'No se pudo guardar el favorito.'
+  }
+
+  if (/favorite/i.test(rawMessage)) {
+    return 'Ya se ha agregado a favoritos'
+  }
+
+  return rawMessage
+}
+
 export function ServicesCenterPage() {
   const [query, setQuery] = useState('')
   const [bankError, setBankError] = useState('')
@@ -104,9 +118,7 @@ export function ServicesCenterPage() {
           return
         }
 
-        failedMessages.push(
-          `${savableSelectedItems[index].titulo || savableSelectedItems[index].nombre || savableSelectedItems[index].referenceId}: ${result.reason.message}`,
-        )
+        failedMessages.push(getFavoriteSaveErrorMessage(result.reason))
       })
 
       if (successfulIds.length > 0) {
@@ -129,7 +141,7 @@ export function ServicesCenterPage() {
       }
 
       if (failedMessages.length > 0) {
-        setFavoritesError(failedMessages.join(' | '))
+        setFavoritesError([...new Set(failedMessages)].join(' | '))
       }
     } finally {
       setIsSavingFavorites(false)
