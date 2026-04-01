@@ -12,7 +12,7 @@ export function BankLocationsList({
     <div className="bank-location-list">
       {items.map((ubicacion) => {
         const isSaved = savedIdSet.has(ubicacion.referenceId)
-        const isSelectable = Boolean(ubicacion.referenceId) && !isSaved
+        const isSelectable = !isSaved
 
         return (
           <article className="bank-location-item" key={ubicacion.id}>
@@ -29,9 +29,7 @@ export function BankLocationsList({
                     <span>
                       {isSaved
                         ? 'Favorito guardado'
-                        : ubicacion.referenceId
-                          ? 'Seleccionar favorito'
-                          : 'No se puede guardar sin identificador'}
+                        : 'Seleccionar favorito'}
                     </span>
                   </label>
                 )}
@@ -61,6 +59,11 @@ export function BankLocationsList({
               <p>
                 <strong>Reference ID:</strong> {ubicacion.referenceId || 'No disponible'}
               </p>
+              {ubicacion.sourceReferenceId && (
+                <p>
+                  <strong>Source Ref:</strong> {ubicacion.sourceReferenceId}
+                </p>
+              )}
               <p>
                 <strong>Coords:</strong>{' '}
                 {ubicacion.latitud !== undefined && ubicacion.longitud !== undefined

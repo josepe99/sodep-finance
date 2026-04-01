@@ -34,7 +34,6 @@ export function ServicesCenterPage() {
   const hasSipapHost = hasSipapHostConfigured()
   const items = getCentrosServiciosItems(rawResponse)
   const selectedItems = items.filter((item) => selectedItemIds.includes(item.id))
-  const savableSelectedItems = selectedItems.filter((item) => item.referenceId)
 
   function handleToggleSelection(itemId) {
     if (!itemId) {
@@ -90,18 +89,13 @@ export function ServicesCenterPage() {
       return
     }
 
-    if (savableSelectedItems.length === 0) {
-      setFavoritesError('Selecciona al menos un centro con identificador válido.')
-      return
-    }
-
     setIsSavingFavorites(true)
     setFavoritesError('')
     setFavoritesMessage('')
 
     try {
       const results = await Promise.allSettled(
-        savableSelectedItems.map((item) =>
+        selectedItems.map((item) =>
           createFavorite({
             type: 'CENTRO',
             referenceId: item.referenceId,
@@ -115,7 +109,7 @@ export function ServicesCenterPage() {
 
       results.forEach((result, index) => {
         if (result.status === 'fulfilled') {
-          successfulIds.push(savableSelectedItems[index].referenceId)
+          successfulIds.push(selectedItems[index].referenceId)
           return
         }
 
@@ -135,10 +129,6 @@ export function ServicesCenterPage() {
             ? 'Se guardo 1 favorito.'
             : `Se guardaron ${successfulIds.length} favoritos.`,
         )
-      }
-
-      if (selectedItems.length > savableSelectedItems.length) {
-        failedMessages.push('Algunos seleccionados no tienen referenceId y no se pudieron guardar.')
       }
 
       if (failedMessages.length > 0) {
@@ -210,11 +200,6 @@ export function ServicesCenterPage() {
           {rawResponse === null && <p className="empty-state">Todavia no hay respuesta capturada.</p>}
           {favoritesMessage && <p className="success">{favoritesMessage}</p>}
           {favoritesError && <p className="error">{favoritesError}</p>}
-          {items.some((item) => !item.referenceId) && (
-            <p className="empty-state">
-              Algunos resultados no tienen identificador y no se pueden guardar como favoritos.
-            </p>
-          )}
 
           {items.length > 0 && (
             <BankLocationsList
