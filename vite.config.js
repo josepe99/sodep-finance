@@ -41,9 +41,10 @@ export default defineConfig(({ mode }) => {
   }
 
   if (sipapHost) {
-    proxy['/favorites'] = {
+    proxy['/api/sipap/favorites'] = {
       target: normalizeTarget(sipapHost),
       changeOrigin: true,
+      rewrite: (path) => path.replace(/^\/api\/sipap/, ''),
     }
   }
 

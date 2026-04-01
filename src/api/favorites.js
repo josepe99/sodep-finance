@@ -1,6 +1,8 @@
 import { buildApiUrl, getApiHost, hasApiHostConfigured } from './client'
 
 const SIPAP_CONFIG_KEY = 'VITE_SIPAP_HOST'
+const SIPAP_PROXY_PATH = '/api/sipap/favorites'
+const SIPAP_API_PATH = '/favorites'
 
 async function parseFavoritesResponse(response) {
   const rawPayload = await response.text()
@@ -37,13 +39,20 @@ export function hasSipapHostConfigured() {
   return hasApiHostConfigured(SIPAP_CONFIG_KEY)
 }
 
+function buildFavoritesUrl() {
+  return buildApiUrl(
+    SIPAP_CONFIG_KEY,
+    getSipapHost() ? SIPAP_API_PATH : SIPAP_PROXY_PATH,
+  )
+}
+
 export async function listFavorites() {
-  const response = await fetch(buildApiUrl(SIPAP_CONFIG_KEY, '/favorites'))
+  const response = await fetch(buildFavoritesUrl())
   return parseFavoritesResponse(response)
 }
 
 export async function createFavorite(payload) {
-  const response = await fetch(buildApiUrl(SIPAP_CONFIG_KEY, '/favorites'), {
+  const response = await fetch(buildFavoritesUrl(), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
