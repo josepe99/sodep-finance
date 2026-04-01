@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getCentrosServicios, hasBankHostConfigured } from '../api/bank'
 import { createFavorite, hasSipapHostConfigured } from '../api/favorites'
 import { BankLocationsList } from '../components/BankLocationsList'
@@ -187,18 +188,23 @@ export function ServicesCenterPage() {
               <h3>Resultados</h3>
               <p>{items.length > 0 ? `${items.length} ubicaciones encontradas` : 'Sin resultados listados'}</p>
             </div>
-            <button
-              type="button"
-              className="button-secondary"
-              disabled={isSavingFavorites || selectedItems.length === 0}
-              onClick={handleSaveFavorites}
-            >
-              {isSavingFavorites
-                ? 'Guardando...'
-                : selectedItems.length > 0
-                  ? `Guardar favoritos (${selectedItems.length})`
-                  : 'Guardar favoritos'}
-            </button>
+            <div className="header-actions">
+              <Link className="button-link" to="/favorites">
+                Ver favoritos
+              </Link>
+              <button
+                type="button"
+                className="button-secondary"
+                disabled={isSavingFavorites || selectedItems.length === 0}
+                onClick={handleSaveFavorites}
+              >
+                {isSavingFavorites
+                  ? 'Guardando...'
+                  : selectedItems.length > 0
+                    ? `Guardar favoritos (${selectedItems.length})`
+                    : 'Guardar favoritos'}
+              </button>
+            </div>
           </div>
 
           {rawResponse === null && <p className="empty-state">Todavia no hay respuesta capturada.</p>}

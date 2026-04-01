@@ -2,23 +2,7 @@ import { buildApiUrl, getApiHost, hasApiHostConfigured } from './client'
 
 const SIPAP_CONFIG_KEY = 'VITE_SIPAP_HOST'
 
-export function getSipapHost() {
-  return getApiHost(SIPAP_CONFIG_KEY)
-}
-
-export function hasSipapHostConfigured() {
-  return hasApiHostConfigured(SIPAP_CONFIG_KEY)
-}
-
-export async function createFavorite(payload) {
-  const response = await fetch(buildApiUrl(SIPAP_CONFIG_KEY, '/favorites'), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
-
+async function parseFavoritesResponse(response) {
   const rawPayload = await response.text()
   const contentType = response.headers.get('content-type') || ''
   const isJson = contentType.includes('application/json')
@@ -43,4 +27,29 @@ export async function createFavorite(payload) {
   }
 
   return parsedPayload
+}
+
+export function getSipapHost() {
+  return getApiHost(SIPAP_CONFIG_KEY)
+}
+
+export function hasSipapHostConfigured() {
+  return hasApiHostConfigured(SIPAP_CONFIG_KEY)
+}
+
+export async function listFavorites() {
+  const response = await fetch(buildApiUrl(SIPAP_CONFIG_KEY, '/favorites'))
+  return parseFavoritesResponse(response)
+}
+
+export async function createFavorite(payload) {
+  const response = await fetch(buildApiUrl(SIPAP_CONFIG_KEY, '/favorites'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+
+  return parseFavoritesResponse(response)
 }
